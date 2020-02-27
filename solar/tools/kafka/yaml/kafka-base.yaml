@@ -1,0 +1,67 @@
+echo "version: '2'
+
+network_mode: \"host\"
+
+services:
+  $BROKER_NAME:
+    container_name: $BROKER_NAME
+    extends:
+      file: orderer-kafka-base.yaml
+      service: kafka
+    environment:
+      # ========================================================================
+      #     Reference: https://kafka.apache.org/documentation/#configuration
+      # ========================================================================
+      #
+      # broker.id
+      - KAFKA_BROKER_ID=${BROKER_ID}
+      #
+      # min.insync.replicas
+      # Let the value of this setting be M. Data is considered committed when
+      # it is written to at least M replicas (which are then considered in-sync
+      # and belong to the in-sync replica set, or ISR). In any other case, the
+      # write operation returns an error. Then:
+      # 1. If up to M-N replicas -- out of the N (see default.replication.factor
+      # below) that the channel data is written to -- become unavailable,
+      # operations proceed normally.
+      # 2. If more replicas become unavailable, Kafka cannot maintain an ISR set
+      # of M, so it stops accepting writes. Reads work without issues. The
+      # channel becomes writeable again when M replicas get in-sync.
+      - KAFKA_MIN_INSYNC_REPLICAS=$MIN_ISR
+      #
+      # default.replication.factor
+      # Let the value of this setting be N. A replication factor of N means that
+      # each channel will have its data replicated to N brokers. These are the
+      # candidates for the ISR set of a channel. As we noted in the
+      # min.insync.replicas section above, not all of these brokers have to be
+      # available all the time. In this sample configuration we choose a
+      # default.replication.factor of K-1 (where K is the total number of brokers in
+      # our Kafka cluster) so as to have the largest possible candidate set for
+      # a channel's ISR. We explicitly avoid setting N equal to K because
+      # channel creations cannot go forward if less than N brokers are up. If N
+      # were set equal to K, a single broker going down would mean that we would
+      # not be able to create new channels, i.e. the crash fault tolerance of
+      # the ordering service would be non-existent.
+      - KAFKA_DEFAULT_REPLICATION_FACTOR=1
+      #
+      # zookeper.connect
+      # Point to the set of Zookeeper nodes comprising a ZK ensemble."
+      ZOOKEEPER_LIST=""
+      for ZOOKEEPER_HOST in $ZOOKEEPER_HOSTS; do
+	if [ -z $ZOOKEEPER_LIST ];then
+	  ZOOKEEPER_LIST="$ZOOKEEPER_HOST"
+	else
+	  ZOOKEEPER_LIST="$ZOOKEEPER_LIST,$ZOOKEEPER_HOST"
+        fi
+      done
+      - KAFKA_ZOOKEEPER_CONNECT=$ZOOKEEPER_LIST
+      # zookeeper.connection.timeout.ms
+      # The max time that the client waits to establish a connection to
+      # Zookeeper. If not set, the value in zookeeper.session.timeout.ms (below)
+      # is used.
+      #- KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS = 6000
+      #
+      # zookeeper.session.timeout.ms
+      #- KAFKA_ZOOKEEPER_SESSION_TIMEOUT_MS = 6000
+     ports:
+       - $KAFKA_PORT:$KAFKA_PORT

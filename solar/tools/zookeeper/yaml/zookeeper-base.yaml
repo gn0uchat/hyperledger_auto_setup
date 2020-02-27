@@ -1,0 +1,30 @@
+version: '2'
+
+network_mode: "host"
+
+services:
+  ${ZOOKEEPER_NAME}:
+    container_name: ${ZOOKEEPER_NAME}
+    extends:
+      file: orderer-kafka-base.yaml
+      service: zookeeper
+    environment:
+      # ========================================================================
+      #     Reference: https://zookeeper.apache.org/doc/r3.4.9/zookeeperAdmin.html#sc_configuration
+      # ========================================================================
+      #
+      # myid
+      # The ID must be unique within the ensemble and should have a value
+      # between 1 and 255.
+      - ZOO_MY_ID=${ZOO_MY_ID}
+      #
+      # server.x=[hostname]:nnnnn[:nnnnn]
+      # The list of servers that make up the ZK ensemble. The list that is used
+      # by the clients must match the list of ZooKeeper servers that each ZK
+      # server has. There are two port numbers 'nnnnn'. The first is what
+      # followers use to connect to the leader, while the second is for leader
+      # election.
+      - ZOO_SERVERS=${ZOO_SERVERS}
+    ports:
+      ${PORT1}:${PORT1}
+      ${PORT2}:${PORT2}

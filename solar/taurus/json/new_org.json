@@ -1,0 +1,21 @@
+{ 
+  "organization" : [
+    {"name" : "org2",
+    "ca"   : "ca1:10.1.3.4:7060",
+    "peer" : [ "peer1:10.1.3.6:7061:3001" ],
+    "anchor" : "peer1:10.1.3.6:7061"
+    }
+  ],
+  "consortium" : {
+  	"name" : "myconsortium"
+  },
+  "channel" : {
+  	"name" : "mychannel",
+	"consortium" : "myconsortium",
+	"peer_org" : [ "peer1:10.1.3.6:7061:org2" ],
+  	"delegate" : {
+	  "peer" : [ "peer0:10.1.3.6:7057" ],
+	  "orderer" : [ "orderer0:10.1.3.4:7070" ]
+	}
+  }
+}
